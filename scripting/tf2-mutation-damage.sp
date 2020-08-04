@@ -23,6 +23,8 @@
 /*****************************/
 //Globals
 
+int assigned_mutation = -1;
+
 /*****************************/
 //Plugin Info
 public Plugin myinfo = 
@@ -37,11 +39,13 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
+
+	HookEvent("player_spawn", Event_OnPlayerSpawn);
 }
 
 public void TF2_AddMutations()
 {
-	TF2_AddMutation("Damage", OnMutationStart, OnMutationEnd);
+	assigned_mutation = TF2_AddMutation("Damage", OnMutationStart, OnMutationEnd);
 }
 
 public void OnMutationStart(int mutation)
@@ -63,5 +67,16 @@ public void OnMutationEnd(int mutation)
 			continue;
 
 		TF2Attrib_RemoveByName(i, "damage bonus");
+	}
+}
+
+public void Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadcast)
+{
+	int client = GetClientOfUserId(event.GetInt("userid"));
+
+	if (client > 0 && IsClientInGame(client) && IsPlayerAlive(client) && TF2_IsMutationActive(assigned_mutation))
+	{
+		TF2Attrib_SetByName(client, "move speed bonus", 1.0 + 0.25);
+		TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.0);
 	}
 }
