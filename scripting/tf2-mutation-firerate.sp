@@ -55,7 +55,14 @@ public void OnMutationStart(int mutation)
 		if (!IsClientInGame(i) || !IsPlayerAlive(i))
 			continue;
 
-		TF2Attrib_SetByName(i, "fire rate bonus", 1.0 - 0.25);
+		int weapon = -1;
+		for (int x = 0; x < 5; x++)
+		{
+			if ((weapon = GetPlayerWeaponSlot(i, x)) == -1)
+				continue;
+			
+			TF2Attrib_SetFireRateBonus(weapon, 0.03);
+		}
 	}
 }
 
@@ -66,7 +73,14 @@ public void OnMutationEnd(int mutation)
 		if (!IsClientInGame(i) || !IsPlayerAlive(i))
 			continue;
 
-		TF2Attrib_RemoveByName(i, "fire rate bonus");
+		int weapon = -1;
+		for (int x = 0; x < 5; x++)
+		{
+			if ((weapon = GetPlayerWeaponSlot(i, x)) == -1)
+				continue;
+			
+			TF2Attrib_RemoveByName(weapon, "fire rate bonus");
+		}
 	}
 }
 
@@ -76,6 +90,22 @@ public void Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadca
 
 	if (client > 0 && IsClientInGame(client) && IsPlayerAlive(client) && TF2_IsMutationActive(assigned_mutation))
 	{
-		TF2Attrib_SetByName(client, "fire rate bonus", 1.0 + 0.25);
+		int weapon = -1;
+		for (int x = 0; x < 5; x++)
+		{
+			if ((weapon = GetPlayerWeaponSlot(client, x)) == -1)
+				continue;
+			
+			TF2Attrib_SetFireRateBonus(weapon, 0.03);
+		}
 	}
+}
+
+void TF2Attrib_SetFireRateBonus(int weapon, float bonus)
+{
+	float firerate;
+	Address addr = TF2Attrib_GetByName(weapon, "fire rate bonus");
+
+	firerate = addr != Address_Null ? TF2Attrib_GetValue(addr) - bonus : 1.00 - bonus;
+	TF2Attrib_SetByName(weapon, "fire rate bonus", firerate);
 }
