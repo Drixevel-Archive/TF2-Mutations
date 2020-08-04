@@ -78,6 +78,7 @@ public void OnMutationStart(int mutation)
 public void OnMutationEnd(int mutation)
 {
 	convar_Reevaluate.IntValue = 1;
+	random_class = TFClass_Unknown;
 }
 
 public void Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadcast)
