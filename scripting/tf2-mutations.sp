@@ -16,6 +16,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <misc-colors>
+#include <tf2-mutations>
 
 /*****************************/
 //ConVars
@@ -40,11 +41,21 @@ enum struct Mutations
 	void Init()
 	{
 		this.name[0] = '\0';
-		this.index = -1;
+		this.index = NO_MUTATION;
 		this.active = false;
 		this.plugin = null;
 		this.start = null;
 		this.end = null;
+	}
+
+	void Clear()
+	{
+		this.name[0] = '\0';
+		this.index = NO_MUTATION;
+		this.active = false;
+
+		delete this.start;
+		delete this.end;
 	}
 
 	void Add(const char[] name, Handle plugin, Function func_start, Function func_end)
@@ -119,6 +130,7 @@ public void OnPluginStart()
 	HookEvent("teamplay_round_win", Event_OnRoundEnd);
 
 	RegAdminCmd("sm_mutations", Command_Mutations, ADMFLAG_GENERIC);
+	RegAdminCmd("sm_syncmutations", Command_SyncMutations, ADMFLAG_GENERIC);
 }
 
 public void OnAllPluginsLoaded()
@@ -146,6 +158,11 @@ public int Native_AddMutation(Handle plugin, int numParams)
 
 public int Native_IsMutationActive(Handle plugin, int numParams)
 {
+	int mutation = GetNativeCell(1);
+
+	if (mutation < 0 || mutation > MAX_MUTATIONS)
+		return false;
+
 	return g_Mutations[GetNativeCell(1)].active;
 }
 
@@ -228,4 +245,15 @@ public int MenuHandler_Mutations(Menu menu, MenuAction action, int param1, int p
 		case MenuAction_End:
 			delete menu;
 	}
+}
+
+public Action Command_SyncMutations(int client, int args)
+{
+	for (int i = 0; i < MAX_MUTATIONS; i++)
+		g_Mutations[i].Clear();
+	g_TotalMutations = 0;
+	
+	OnAllPluginsLoaded();
+	CPrintToChat(client, "{crimson}[{fullred}Mutations{crimson}] {beige}Mutations have been synced.");
+	return Plugin_Handled;
 }
