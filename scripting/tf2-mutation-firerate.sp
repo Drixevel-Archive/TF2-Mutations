@@ -55,7 +55,7 @@ public void OnMutationStart(int mutation)
 		if (!IsClientInGame(i) || !IsPlayerAlive(i))
 			continue;
 
-		TF2Attrib_SetByName(i, "fire rate bonus", 1.0 + 0.25);
+		TF2Attrib_SetByName(i, "fire rate bonus", 1.0 - 0.25);
 	}
 }
 
