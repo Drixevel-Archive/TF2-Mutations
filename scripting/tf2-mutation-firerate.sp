@@ -5,8 +5,8 @@
 
 /*****************************/
 //Defines
-#define PLUGIN_NAME "[TF2] Mutation - Damage"
-#define PLUGIN_DESCRIPTION "A random mutation which adds damage to all players."
+#define PLUGIN_NAME "[TF2] Mutation - Fire Rate"
+#define PLUGIN_DESCRIPTION "A random mutation which adds fire rate to all players."
 #define PLUGIN_VERSION "1.0.0"
 
 /*****************************/
@@ -41,7 +41,7 @@ public void OnPluginStart()
 
 public void TF2_AddMutations()
 {
-	TF2_AddMutation("Damage", OnMutationStart, OnMutationEnd);
+	TF2_AddMutation("Fire Rate", OnMutationStart, OnMutationEnd);
 }
 
 public void OnMutationStart(int mutation)
@@ -51,7 +51,7 @@ public void OnMutationStart(int mutation)
 		if (!IsClientInGame(i) || !IsPlayerAlive(i))
 			continue;
 
-		TF2Attrib_SetByName(i, "damage bonus", 1.0 + 0.25);
+		TF2Attrib_SetByName(i, "fire rate bonus", 1.0 + 0.25);
 	}
 }
 
@@ -62,6 +62,6 @@ public void OnMutationEnd(int mutation)
 		if (!IsClientInGame(i) || !IsPlayerAlive(i))
 			continue;
 
-		TF2Attrib_RemoveByName(i, "damage bonus");
+		TF2Attrib_RemoveByName(i, "fire rate bonus");
 	}
 }
