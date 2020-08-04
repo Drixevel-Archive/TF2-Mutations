@@ -52,10 +52,10 @@ enum struct Mutations
 		this.index = g_TotalMutations;
 		this.plugin = plugin;
 
-		this.start = new PrivateForward(ET_Ignore);
+		this.start = new PrivateForward(ET_Ignore, Param_Cell);
 		this.start.AddFunction(plugin, func_start);
 
-		this.end = new PrivateForward(ET_Ignore);
+		this.end = new PrivateForward(ET_Ignore, Param_Cell);
 		this.end.AddFunction(plugin, func_end);
 	}
 
@@ -116,6 +116,8 @@ public void OnPluginStart()
 	
 	HookEvent("teamplay_round_start", Event_OnRoundStart);
 	HookEvent("teamplay_round_win", Event_OnRoundEnd);
+
+	RegAdminCmd("sm_mutations", Command_Mutations, ADMFLAG_GENERIC);
 }
 
 public void OnAllPluginsLoaded()
@@ -167,4 +169,56 @@ public void Event_OnRoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	for (int i = 0; i < g_TotalMutations; i++)
 		g_Mutations[i].Fire("end");
+}
+
+public Action Command_Mutations(int client, int args)
+{
+	OpenMutationsMenu(client);
+	return Plugin_Handled;
+}
+
+void OpenMutationsMenu(int client)
+{
+	Menu menu = new Menu(MenuHandler_Mutations);
+	menu.SetTitle("Available Mutations:");
+
+	char sID[16]; char sDisplay[256];
+	for (int i = 0; i < g_TotalMutations; i++)
+	{
+		IntToString(i, sID, sizeof(sID));
+		Format(sDisplay, sizeof(sDisplay), "[%s] %s", g_Mutations[i].active ? "X" : "", g_Mutations[i].name);
+		menu.AddItem(sID, sDisplay);
+	}
+
+	menu.Display(client, MENU_TIME_FOREVER);
+}
+
+public int MenuHandler_Mutations(Menu menu, MenuAction action, int param1, int param2)
+{
+	switch (action)
+	{
+		case MenuAction_Select:
+		{
+			char sID[16];
+			menu.GetItem(param2, sID, sizeof(sID));
+			int mutation = StringToInt(sID);
+
+			g_Mutations[mutation].active = !g_Mutations[mutation].active;
+
+			if (g_Mutations[mutation].active)
+			{
+				g_Mutations[mutation].Fire("start");
+				CPrintToChatAll("{crimson}[{fullred}Mutations{crimson}] {beige}Enabled: {chartreuse}%s", g_Mutations[mutation].name);
+			}
+			else
+			{
+				g_Mutations[mutation].Fire("end");
+				CPrintToChatAll("{crimson}[{fullred}Mutations{crimson}] {beige}Disabled: {chartreuse}%s", g_Mutations[mutation].name);
+			}
+
+			OpenMutationsMenu(param1);
+		}
+		case MenuAction_End:
+			delete menu;
+	}
 }
