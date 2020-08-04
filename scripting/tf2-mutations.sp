@@ -14,6 +14,7 @@
 /*****************************/
 //Includes
 #include <sourcemod>
+#include <sdktools>
 #include <misc-colors>
 
 /*****************************/
@@ -150,6 +151,12 @@ public int Native_IsMutationActive(Handle plugin, int numParams)
 
 public void Event_OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
+	if (GameRules_GetProp("m_bInWaitingForPlayers"))
+	{
+		CPrintToChatAll("{crimson}[{fullred}Mutations{crimson}] {beige}Active:{chartreuse}Waiting for Players");
+		return;
+	}
+	
 	char sMutations[64];
 	for (int i = 0; i < g_TotalMutations; i++)
 	{
