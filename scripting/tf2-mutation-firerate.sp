@@ -61,7 +61,7 @@ public void OnMutationStart(int mutation)
 			if ((weapon = GetPlayerWeaponSlot(i, x)) == -1)
 				continue;
 			
-			TF2Attrib_SetFireRateBonus(weapon, 0.03);
+			TF2Attrib_SetFireRateBonus(weapon, 0.2);
 		}
 	}
 }
@@ -96,7 +96,7 @@ public void Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadca
 			if ((weapon = GetPlayerWeaponSlot(client, x)) == -1)
 				continue;
 			
-			TF2Attrib_SetFireRateBonus(weapon, 0.03);
+			TF2Attrib_SetFireRateBonus(weapon, 0.2);
 		}
 	}
 }
