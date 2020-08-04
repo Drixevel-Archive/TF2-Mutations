@@ -23,7 +23,7 @@
 /*****************************/
 //Globals
 
-int assigned_mutation = -1;
+int assigned_mutation = NO_MUTATION;
 
 /*****************************/
 //Plugin Info

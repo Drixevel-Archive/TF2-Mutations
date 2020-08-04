@@ -3,6 +3,8 @@
 #endif
 #define __tf2_mutations_included
 
+#define NO_MUTATION -1
+
 typedef OnMutationStartFunc = function void (int mutation);
 typedef OnMutationEndFunc = function void (int mutation);
 
