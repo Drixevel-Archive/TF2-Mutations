@@ -21,10 +21,12 @@
 /*****************************/
 //ConVars
 
+ConVar convar_Reevaluate;
+
 /*****************************/
 //Globals
 
-int assigned_mutation = -1;
+int assigned_mutation = NO_MUTATION;
 TFClassType random_class = TFClass_Unknown;
 
 /*****************************/
@@ -42,6 +44,8 @@ public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 
+	convar_Reevaluate = FindConVar("tf_bot_reevaluate_class_in_spawnroom");
+
 	HookEvent("player_spawn", Event_OnPlayerSpawn);
 	HookEvent("player_changeclass", Event_OnPlayerSpawn);
 }
@@ -53,6 +57,7 @@ public void TF2_AddMutations()
 
 public void OnMutationStart(int mutation)
 {
+	convar_Reevaluate.IntValue = 0;
 	random_class = view_as<TFClassType>(GetRandomInt(1, 9));
 
 	char sClass[32];
@@ -72,7 +77,7 @@ public void OnMutationStart(int mutation)
 
 public void OnMutationEnd(int mutation)
 {
-
+	convar_Reevaluate.IntValue = 1;
 }
 
 public void Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadcast)
