@@ -55,8 +55,7 @@ public void OnPluginEnd()
 		if (!IsClientInGame(i) || !IsPlayerAlive(i))
 			continue;
 
-		if (IsValidEntity(g_Glow[i]))
-			AcceptEntityInput(g_Glow[i], "Kill");
+		DestroyGlow(i);
 	}
 }
 
@@ -67,17 +66,17 @@ public void TF2_AddMutations()
 
 public void OnMutationStart(int mutation)
 {
-	char targetname[64];
+	char targetname[64]; int glow;
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientInGame(i) || !IsPlayerAlive(i))
 			continue;
 		
-		if (IsValidEntity(g_Glow[i]))
-			AcceptEntityInput(g_Glow[i], "Kill");
+		DestroyGlow(i);
 		
 		FormatEx(targetname, sizeof(targetname), "glow_%i", i);
-		g_Glow[i] = EntIndexToEntRef(TF2_CreateGlow(targetname, i, GetClientTeam(i) == 2 ? color_red : color_blue));
+		if ((glow = TF2_CreateGlow(targetname, i, GetClientTeam(i) == 2 ? color_red : color_blue)) != -1)
+			g_Glow[i] = EntIndexToEntRef(glow);
 	}
 }
 
@@ -88,8 +87,7 @@ public void OnMutationEnd(int mutation)
 		if (!IsClientInGame(i) || !IsPlayerAlive(i))
 			continue;
 
-		if (IsValidEntity(g_Glow[i]))
-			AcceptEntityInput(g_Glow[i], "Kill");
+		DestroyGlow(i);
 	}
 }
 
@@ -99,13 +97,14 @@ public void Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadca
 
 	if (client > 0 && IsClientInGame(client) && IsPlayerAlive(client) && TF2_IsMutationActive(assigned_mutation))
 	{
-		if (IsValidEntity(g_Glow[client]))
-			AcceptEntityInput(g_Glow[client], "Kill");
+		DestroyGlow(client);
 		
 		char targetname[64];
 		FormatEx(targetname, sizeof(targetname), "glow_%i", client);
 		
-		g_Glow[client] = EntIndexToEntRef(TF2_CreateGlow(targetname, client, GetClientTeam(client) == 2 ? color_red : color_blue));
+		int glow = -1;
+		if ((glow = TF2_CreateGlow(targetname, client, GetClientTeam(client) == 2 ? color_red : color_blue)) != -1)
+			g_Glow[client] = EntIndexToEntRef(glow);
 	}
 }
 
@@ -115,15 +114,13 @@ public void Event_OnPlayerDeath(Event event, const char[] name, bool dontBroadca
 
 	if (client > 0 && IsClientInGame(client) && IsPlayerAlive(client) && TF2_IsMutationActive(assigned_mutation))
 	{
-		if (IsValidEntity(g_Glow[client]))
-			AcceptEntityInput(g_Glow[client], "Kill");
+		DestroyGlow(client);
 	}
 }
 
 public void OnClientDisconnect(int client)
 {
-	if (IsValidEntity(g_Glow[client]))
-		AcceptEntityInput(g_Glow[client], "Kill");
+	DestroyGlow(client);
 }
 
 public void OnClientDisconnect_Post(int client)
@@ -160,4 +157,20 @@ stock int TF2_CreateGlow(const char[] name, int target, int color[4] = {255, 255
 	}
 
 	return glow;
+}
+
+void DestroyGlow(int client)
+{
+	if (g_Glow[client] == INVALID_ENT_REFERENCE)
+		return;
+	
+	int glow = EntRefToEntIndex(g_Glow[client]);
+
+	if (IsValidEntity(glow))
+	{
+		AcceptEntityInput(glow, "Disable");
+		AcceptEntityInput(glow, "Kill");
+	}
+
+	g_Glow[client] = INVALID_ENT_REFERENCE;
 }
