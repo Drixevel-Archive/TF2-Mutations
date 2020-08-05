@@ -41,6 +41,7 @@ public void OnPluginStart()
 	LoadTranslations("common.phrases");
 
 	HookEvent("player_spawn", Event_OnPlayerSpawn);
+	HookEvent("player_death", Event_OnPlayerDeath);
 }
 
 public void TF2_AddMutations()
@@ -79,7 +80,7 @@ public void OnMutationEnd(int mutation)
 			if ((weapon = GetPlayerWeaponSlot(i, x)) == -1)
 				continue;
 			
-			TF2Attrib_RemoveByName(weapon, "fire rate bonus");
+			TF2Attrib_SetFireRateBonus(weapon, -0.2);
 		}
 	}
 }
@@ -97,6 +98,23 @@ public void Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadca
 				continue;
 			
 			TF2Attrib_SetFireRateBonus(weapon, 0.2);
+		}
+	}
+}
+
+public void Event_OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
+{
+	int client = GetClientOfUserId(event.GetInt("userid"));
+
+	if (client > 0 && IsClientInGame(client) && IsPlayerAlive(client) && TF2_IsMutationActive(assigned_mutation))
+	{
+		int weapon = -1;
+		for (int x = 0; x < 5; x++)
+		{
+			if ((weapon = GetPlayerWeaponSlot(client, x)) == -1)
+				continue;
+			
+			TF2Attrib_SetFireRateBonus(weapon, -0.2);
 		}
 	}
 }
