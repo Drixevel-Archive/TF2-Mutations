@@ -80,7 +80,7 @@ public void OnMutationStart(int mutation)
 
 public Action OnWeaponSwitch(int client, int weapon)
 {
-	if (TF2_IsMutationActive(assigned_mutation) && random_slot != -1 && GetWeaponSlot(client, weapon) != random_slot && GetWeaponSlot(client, weapon) < 3)
+	if (IsValidEntity(weapon) && TF2_IsMutationActive(assigned_mutation) && random_slot != -1 && GetWeaponSlot(client, weapon) != random_slot && GetWeaponSlot(client, weapon) <= 2)
 		return Plugin_Stop;
 	
 	return Plugin_Continue;
