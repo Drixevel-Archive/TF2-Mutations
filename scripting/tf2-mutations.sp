@@ -181,7 +181,12 @@ public void Event_OnRoundStart(Event event, const char[] name, bool dontBroadcas
 	}
 
 	CPrintToChatAll("{crimson}[{fullred}Mutations{crimson}] {beige}Active:{chartreuse}%s", strlen(sMutations) > 0 ? sMutations : " None Active");
+	
+	CreateTimer(0.2, Timer_RoundStart, _, TIMER_FLAG_NO_MAPCHANGE);
+}
 
+public Action Timer_RoundStart(Handle timer)
+{
 	for (int i = 0; i < g_TotalMutations; i++)
 		g_Mutations[i].Fire("start");
 }
