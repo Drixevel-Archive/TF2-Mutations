@@ -144,7 +144,7 @@ public int Native_AddMutation(Handle plugin, int numParams)
 {
 	int size;
 	GetNativeStringLength(1, size); size++;
-	
+
 	char[] name = new char[size];
 	GetNativeString(1, name, size);
 
@@ -168,7 +168,7 @@ public int Native_IsMutationActive(Handle plugin, int numParams)
 
 public void Event_OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
-	if (GameRules_GetProp("m_bInWaitingForPlayers") || GetRandomFloat(0.0, 100.0) > 50.0)
+	if (GameRules_GetProp("m_bInWaitingForPlayers") || GetRandomFloat(0.0, 100.0) > 25.0)
 		return;
 	
 	char sMutations[64];
