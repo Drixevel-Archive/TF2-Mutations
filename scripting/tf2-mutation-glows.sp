@@ -12,6 +12,7 @@
 /*****************************/
 //Includes
 #include <sourcemod>
+#include <sdkhooks>
 #include <tf2_stocks>
 #include <tf2-mutations>
 
@@ -76,7 +77,10 @@ public void OnMutationStart(int mutation)
 		
 		FormatEx(targetname, sizeof(targetname), "glow_%i", i);
 		if ((glow = TF2_CreateGlow(targetname, i, GetClientTeam(i) == 2 ? color_red : color_blue)) != -1)
+		{
 			g_Glow[i] = EntIndexToEntRef(glow);
+			SDKHook(i, SDKHook_PreThink, OnPlayerThink);
+		}
 	}
 }
 
@@ -104,7 +108,10 @@ public void Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadca
 		
 		int glow = -1;
 		if ((glow = TF2_CreateGlow(targetname, client, GetClientTeam(client) == 2 ? color_red : color_blue)) != -1)
+		{
 			g_Glow[client] = EntIndexToEntRef(glow);
+			SDKHook(client, SDKHook_PreThink, OnPlayerThink);
+		}
 	}
 }
 
@@ -173,4 +180,69 @@ void DestroyGlow(int client)
 	}
 
 	g_Glow[client] = INVALID_ENT_REFERENCE;
+	SDKUnhook(client, SDKHook_PreThink, OnPlayerThink);
+}
+
+public Action OnPlayerThink(int entity)
+{
+	if (g_Glow[entity] == INVALID_ENT_REFERENCE)
+		return;
+	
+	int glow = EntRefToEntIndex(g_Glow[entity]);
+
+	if (!IsValidEntity(glow))
+		return;
+	
+	int color[4];
+
+	if (TF2_IsPlayerInCondition(entity, TFCond_Cloaked))
+	{
+		color[0] = 0;
+		color[1] = 0;
+		color[2] = 0;
+		color[3] = 0;
+	}
+	else if (TF2_IsPlayerInCondition(entity, TFCond_Disguised))
+	{
+		switch (GetClientTeam(entity))
+		{
+			case 2:
+			{
+				color[0] = 0;
+				color[1] = 0;
+				color[2] = 255;
+				color[3] = 255;
+			}
+			case 3:
+			{
+				color[0] = 255;
+				color[1] = 0;
+				color[2] = 0;
+				color[3] = 255;
+			}
+		}
+	}
+	else
+	{
+		switch (GetClientTeam(entity))
+		{
+			case 2:
+			{
+				color[0] = 255;
+				color[1] = 0;
+				color[2] = 0;
+				color[3] = 255;
+			}
+			case 3:
+			{
+				color[0] = 0;
+				color[1] = 0;
+				color[2] = 255;
+				color[3] = 255;
+			}
+		}
+	}
+
+	SetVariantColor(color);
+	AcceptEntityInput(glow, "SetGlowColor");
 }
