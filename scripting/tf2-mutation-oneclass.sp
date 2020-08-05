@@ -85,7 +85,7 @@ public void Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadca
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
 
-	if (client > 0 && IsClientInGame(client) && IsPlayerAlive(client) && TF2_IsMutationActive(assigned_mutation))
+	if (client > 0 && IsClientInGame(client) && IsPlayerAlive(client) && TF2_IsMutationActive(assigned_mutation) && random_class != TFClass_Unknown)
 	{
 		TF2_SetPlayerClass(client, random_class);
 		TF2_RegeneratePlayer(client);
