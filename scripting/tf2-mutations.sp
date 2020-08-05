@@ -73,7 +73,7 @@ enum struct Mutations
 
 	void Fire(const char[] name)
 	{
-		if (this.plugin == null || !this.active)
+		if (this.plugin == null)
 			return;
 		
 		if (StrEqual(name, "start", false) && this.start != null && this.start && GetForwardFunctionCount(this.start) > 0)
@@ -144,7 +144,7 @@ public int Native_AddMutation(Handle plugin, int numParams)
 {
 	int size;
 	GetNativeStringLength(1, size); size++;
-
+	
 	char[] name = new char[size];
 	GetNativeString(1, name, size);
 
@@ -168,16 +168,13 @@ public int Native_IsMutationActive(Handle plugin, int numParams)
 
 public void Event_OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
-	if (GameRules_GetProp("m_bInWaitingForPlayers"))
-	{
-		CPrintToChatAll("{crimson}[{fullred}Mutations{crimson}] {beige}Active:{chartreuse}Waiting for Players");
+	if (GameRules_GetProp("m_bInWaitingForPlayers") || GetRandomFloat(0.0, 100.0) > 50.0)
 		return;
-	}
 	
 	char sMutations[64];
 	for (int i = 0; i < g_TotalMutations; i++)
 	{
-		g_Mutations[i].active = view_as<bool>(GetRandomInt(0, 1));
+		g_Mutations[i].active = view_as<bool>(GetRandomFloat(0.0, 100.0) <= 25.0);
 		
 		if (g_Mutations[i].active)
 			Format(sMutations, sizeof(sMutations), "%s%s%s", sMutations, strlen(sMutations) == 0 ? " " : ", ", g_Mutations[i].name);
