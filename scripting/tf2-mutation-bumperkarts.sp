@@ -42,6 +42,34 @@ public void OnPluginStart()
 	HookEvent("player_changeclass", Event_OnPlayerSpawn);
 }
 
+public void OnMapStart()
+{
+	PrecacheModel("models/player/items/taunts/bumpercar/parts/bumpercar.mdl");
+	PrecacheModel("models/player/items/taunts/bumpercar/parts/bumpercar_nolights.mdl");
+	
+	PrecacheSound(")weapons/bumper_car_accelerate.wav");
+	PrecacheSound(")weapons/bumper_car_decelerate.wav");
+	PrecacheSound(")weapons/bumper_car_decelerate_quick.wav");
+	PrecacheSound(")weapons/bumper_car_go_loop.wav");
+	PrecacheSound(")weapons/bumper_car_hit_ball.wav");
+	PrecacheSound(")weapons/bumper_car_hit_ghost.wav");
+	PrecacheSound(")weapons/bumper_car_hit_hard.wav");
+	PrecacheSound(")weapons/bumper_car_hit_into_air.wav");
+	PrecacheSound(")weapons/bumper_car_jump.wav");
+	PrecacheSound(")weapons/bumper_car_jump_land.wav");
+	PrecacheSound(")weapons/bumper_car_screech.wav");
+	PrecacheSound(")weapons/bumper_car_spawn.wav");
+	PrecacheSound(")weapons/bumper_car_spawn_from_lava.wav");
+	PrecacheSound(")weapons/bumper_car_speed_boost_start.wav");
+	PrecacheSound(")weapons/bumper_car_speed_boost_stop.wav");
+	
+	char name[64];
+	for(int i = 1; i <= 8; i++) {
+		FormatEx(name, sizeof(name), "weapons/bumper_car_hit%d.wav", i);
+		PrecacheSound(name);
+	}
+}
+
 public void TF2_AddMutations()
 {
 	assigned_mutation = TF2_AddMutation("Bumper Karts", OnMutationStart, OnMutationEnd);
@@ -82,12 +110,10 @@ public void Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadca
 public Action OnClientCommand(int client, int args)
 {
 	char sCommand[32];
-	GetCmdArgString(sCommand, sizeof(sCommand));
-
+	GetCmdArg(0, sCommand, sizeof(sCommand));
+	
 	if (StrEqual(sCommand, "kill", false) || StrEqual(sCommand, "explode", false))
-	{
 		TF2_RemoveCondition(client, TFCond_HalloweenKart);
-	}
 
 	return Plugin_Continue;
 }
