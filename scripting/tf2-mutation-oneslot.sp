@@ -75,15 +75,57 @@ public void OnMutationStart(int mutation)
 		
 		EquipWeaponSlot(i, random_slot);
 		SDKHook(i, SDKHook_WeaponSwitch, OnWeaponSwitch);
+		SDKHook(i, SDKHook_OnTakeDamage, OnTakeDamage);
 	}
 }
 
 public Action OnWeaponSwitch(int client, int weapon)
 {
-	if (IsValidEntity(weapon) && TF2_IsMutationActive(assigned_mutation) && random_slot != -1 && GetWeaponSlot(client, weapon) != random_slot && GetWeaponSlot(client, weapon) <= 2)
+	bool isengi = TF2_GetPlayerClass(client) == TFClass_Engineer;
+	if (isengi && GetActiveWeaponSlot(client) > 2)
+		return Plugin_Continue;
+	
+	int max = isengi ? 1 : 2;
+	
+	if (IsValidEntity(weapon) && TF2_IsMutationActive(assigned_mutation) && random_slot != -1 && GetWeaponSlot(client, weapon) != random_slot && GetWeaponSlot(client, weapon) <= max)
 		return Plugin_Stop;
 	
 	return Plugin_Continue;
+}
+
+public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	if (attacker < 1 || attacker > MaxClients)
+		return Plugin_Continue;
+	
+	if (TF2_GetPlayerClass(attacker) == TFClass_Engineer && GetWeaponSlot(attacker, weapon) == 2 && random_slot != -1 && GetWeaponSlot(attacker, weapon) != random_slot)
+	{
+		damage = 0.0;
+		return Plugin_Changed;
+	}
+
+	return Plugin_Continue;
+}
+
+stock int GetActiveWeaponSlot(int client)
+{
+	if (client == 0 || client > MaxClients || !IsClientInGame(client) || !IsPlayerAlive(client))
+		return -1;
+	
+	int weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+	
+	if (weapon == 0 || weapon < MaxClients || !IsValidEntity(weapon))
+		return -1;
+	
+	for (int i = 0; i < 5; i++)
+	{
+		if (GetPlayerWeaponSlot(client, i) != weapon)
+			continue;
+
+		return i;
+	}
+
+	return -1;
 }
 
 public void OnMutationEnd(int mutation)
@@ -95,6 +137,7 @@ public void OnMutationEnd(int mutation)
 		
 		EquipWeaponSlot(i, 0);
 		SDKUnhook(i, SDKHook_WeaponSwitch, OnWeaponSwitch);
+		SDKUnhook(i, SDKHook_OnTakeDamage, OnTakeDamage);
 	}
 
 	random_slot = -1;
