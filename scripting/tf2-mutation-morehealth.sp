@@ -14,6 +14,7 @@
 #include <sourcemod>
 #include <tf2_stocks>
 #include <sdkhooks>
+#include <tf2attributes>
 #include <tf2-mutations>
 
 /*****************************/
@@ -41,6 +42,14 @@ public void OnPluginStart()
 
 	HookEvent("player_spawn", Event_OnPlayerSpawn);
 	HookEvent("player_changeclass", Event_OnPlayerSpawn);
+
+	RegAdminCmd("sm_getmaxhealth", Command_GetMaxHealth, ADMFLAG_ROOT);
+}
+
+public Action Command_GetMaxHealth(int client, int args)
+{
+	PrintToChat(client, "MaxHealth: %i", GetEntProp(client, Prop_Data, "m_iMaxHealth"));
+	return Plugin_Handled;
 }
 
 public void TF2_AddMutations()
@@ -55,20 +64,9 @@ public void OnMutationStart(int mutation)
 		if (!IsClientInGame(i) || !IsPlayerAlive(i))
 			continue;
 		
-		SetEntityHealth(i, TF2_GetMaxHealth(i) * 2);
-		SDKHook(i, SDKHook_GetMaxHealth, OnGetMaxHealth);
+		SetEntityHealth(i, GetEntProp(i, Prop_Data, "m_iMaxHealth") + 100);
+		TF2Attrib_SetByName(i, "max health additive bonus", 100.0);
 	}
-}
-
-public Action OnGetMaxHealth(int entity, int& maxhealth)
-{
-	if (TF2_IsMutationActive(assigned_mutation))
-	{
-		maxhealth *= 2;
-		return Plugin_Changed;
-	}
-
-	return Plugin_Continue;
 }
 
 public void OnMutationEnd(int mutation)
@@ -78,8 +76,8 @@ public void OnMutationEnd(int mutation)
 		if (!IsClientInGame(i) || !IsPlayerAlive(i))
 			continue;
 		
-		SetEntityHealth(i, TF2_GetMaxHealth(i));
-		SDKUnhook(i, SDKHook_GetMaxHealth, OnGetMaxHealth);
+		SetEntityHealth(i, GetEntProp(i, Prop_Data, "m_iMaxHealth"));
+		TF2Attrib_RemoveByName(i, "max health additive bonus");
 	}
 }
 
@@ -88,13 +86,5 @@ public void Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadca
 	int client = GetClientOfUserId(event.GetInt("userid"));
 
 	if (client > 0 && IsClientInGame(client) && IsPlayerAlive(client) && TF2_IsMutationActive(assigned_mutation))
-	{
-		SetEntityHealth(client, TF2_GetMaxHealth(client) * 2);
-	}
-}
-
-stock int TF2_GetMaxHealth(int client)
-{
-	int maxhealth = GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client);
-	return ((maxhealth == -1 || maxhealth == 80896) ? GetEntProp(client, Prop_Data, "m_iMaxHealth") : maxhealth);
+		SetEntityHealth(client, GetEntProp(client, Prop_Data, "m_iMaxHealth") + 100);
 }
