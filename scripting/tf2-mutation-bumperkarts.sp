@@ -82,6 +82,7 @@ public void OnMutationStart(int mutation)
 		if (!IsClientInGame(i) || !IsPlayerAlive(i))
 			continue;
 		
+		TF2_RemoveAllWeapons(i);
 		TF2_AddCondition(i, TFCond_HalloweenKart, TFCondDuration_Infinite);
 	}
 }
@@ -94,6 +95,7 @@ public void OnMutationEnd(int mutation)
 			continue;
 		
 		TF2_RemoveCondition(i, TFCond_HalloweenKart);
+		TF2_RegeneratePlayer(i);
 	}
 }
 
@@ -103,6 +105,7 @@ public void Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadca
 
 	if (client > 0 && IsClientInGame(client) && IsPlayerAlive(client) && TF2_IsMutationActive(assigned_mutation))
 	{
+		TF2_RemoveAllWeapons(client);
 		TF2_AddCondition(client, TFCond_HalloweenKart, TFCondDuration_Infinite);
 	}
 }
@@ -113,7 +116,10 @@ public Action OnClientCommand(int client, int args)
 	GetCmdArg(0, sCommand, sizeof(sCommand));
 	
 	if (StrEqual(sCommand, "kill", false) || StrEqual(sCommand, "explode", false))
+	{
 		TF2_RemoveCondition(client, TFCond_HalloweenKart);
+		TF2_RegeneratePlayer(client);
+	}
 
 	return Plugin_Continue;
 }
