@@ -12,6 +12,7 @@
 /*****************************/
 //Includes
 #include <sourcemod>
+#include <sdkhooks>
 #include <tf2_stocks>
 #include <tf2-mutations>
 
@@ -40,6 +41,9 @@ public void OnPluginStart()
 
 	HookEvent("player_spawn", Event_OnPlayerSpawn);
 	HookEvent("player_changeclass", Event_OnPlayerSpawn);
+
+	AddCommandListener(DoSuicide, "explode");
+	AddCommandListener(DoSuicide, "kill");
 }
 
 public void OnMapStart()
@@ -110,16 +114,13 @@ public void Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadca
 	}
 }
 
-public Action OnClientCommand(int client, int args)
+public Action DoSuicide(int client, const char[] command, int argc)
 {
-	char sCommand[32];
-	GetCmdArg(0, sCommand, sizeof(sCommand));
-	
-	if (StrEqual(sCommand, "kill", false) || StrEqual(sCommand, "explode", false))
+    if (TF2_IsMutationActive(assigned_mutation) && TF2_IsPlayerInCondition(client, TFCond_HalloweenKart))
 	{
-		TF2_RemoveCondition(client, TFCond_HalloweenKart);
-		TF2_RegeneratePlayer(client);
-	}
+        SDKHooks_TakeDamage(client, 0, 0, 40000.0, (command[0] == 'e' ? DMG_BLAST : DMG_GENERIC) | DMG_PREVENT_PHYSICS_FORCE);
+        return Plugin_Handled;
+    }
 
-	return Plugin_Continue;
+    return Plugin_Continue;
 }
