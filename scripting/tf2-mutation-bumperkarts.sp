@@ -68,7 +68,8 @@ public void OnMapStart()
 	PrecacheSound(")weapons/bumper_car_speed_boost_stop.wav");
 	
 	char name[64];
-	for(int i = 1; i <= 8; i++) {
+	for(int i = 1; i <= 8; i++)
+	{
 		FormatEx(name, sizeof(name), "weapons/bumper_car_hit%d.wav", i);
 		PrecacheSound(name);
 	}
