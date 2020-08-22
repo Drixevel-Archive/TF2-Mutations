@@ -66,7 +66,7 @@ public void OnMutationStart(int mutation)
 	if (total < 1)
 		return;
 	
-	total = GetRandomInt(0, total - 1);
+	total = GetRandomInt(0, total - 1) / 2;
 
 	float origin[3]; float angles[3]; int building;
 	for (int i = 0; i < total; i++)
@@ -75,9 +75,9 @@ public void OnMutationStart(int mutation)
 		//angles[1] = GetRandomFloat(0.0, 360.0);
 
 		if (GetRandomFloat(0.0, 100.0) >= 50.0)
-			building = TF2_SpawnSentry(-1, origin, angles);
+			building = TF2_SpawnSentry(-1, origin, angles, (GetRandomFloat(0.0, 100.0) >= 50.0) ? TFTeam_Red : TFTeam_Blue);
 		else
-			building = TF2_SpawnDispenser(-1, origin, angles);
+			building = TF2_SpawnDispenser(-1, origin, angles, (GetRandomFloat(0.0, 100.0) >= 50.0) ? TFTeam_Red : TFTeam_Blue);
 		
 		g_Buildings.Push(EntIndexToEntRef(building));
 	}
