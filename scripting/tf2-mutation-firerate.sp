@@ -24,6 +24,7 @@
 //Globals
 
 int assigned_mutation = NO_MUTATION;
+bool g_HasFireRate[4096 + 1];
 
 /*****************************/
 //Plugin Info
@@ -62,7 +63,11 @@ public void OnMutationStart(int mutation)
 			if ((weapon = GetPlayerWeaponSlot(i, x)) == -1)
 				continue;
 			
-			TF2Attrib_SetFireRateBonus(weapon, 0.2);
+			if (!g_HasFireRate[weapon])
+			{
+				g_HasFireRate[weapon] = true;
+				TF2Attrib_SetFireRateBonus(weapon, 0.2);
+			}
 		}
 	}
 }
@@ -80,7 +85,11 @@ public void OnMutationEnd(int mutation)
 			if ((weapon = GetPlayerWeaponSlot(i, x)) == -1)
 				continue;
 			
-			TF2Attrib_SetFireRateBonus(weapon, -0.2);
+			if (g_HasFireRate[weapon])
+			{
+				g_HasFireRate[weapon] = false;
+				TF2Attrib_SetFireRateBonus(weapon, -0.2);
+			}
 		}
 	}
 }
@@ -97,7 +106,11 @@ public void Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadca
 			if ((weapon = GetPlayerWeaponSlot(client, x)) == -1)
 				continue;
 			
-			TF2Attrib_SetFireRateBonus(weapon, 0.2);
+			if (!g_HasFireRate[weapon])
+			{
+				g_HasFireRate[weapon] = true;
+				TF2Attrib_SetFireRateBonus(weapon, 0.2);
+			}
 		}
 	}
 }
@@ -114,7 +127,11 @@ public void Event_OnPlayerDeath(Event event, const char[] name, bool dontBroadca
 			if ((weapon = GetPlayerWeaponSlot(client, x)) == -1)
 				continue;
 			
-			TF2Attrib_SetFireRateBonus(weapon, -0.2);
+			if (g_HasFireRate[weapon])
+			{
+				g_HasFireRate[weapon] = false;
+				TF2Attrib_SetFireRateBonus(weapon, -0.2);
+			}
 		}
 	}
 }
@@ -126,4 +143,10 @@ void TF2Attrib_SetFireRateBonus(int weapon, float bonus)
 
 	firerate = addr != Address_Null ? TF2Attrib_GetValue(addr) - bonus : 1.00 - bonus;
 	TF2Attrib_SetByName(weapon, "fire rate bonus", firerate);
+}
+
+public void OnEntityDestroyed(int entity)
+{
+	if (entity > 0)
+		g_HasFireRate[entity] = false;
 }
