@@ -251,6 +251,9 @@ public int MenuHandler_Mutations(Menu menu, MenuAction action, int param1, int p
 
 public Action Command_SyncMutations(int client, int args)
 {
+	for (int i = 0; i < g_TotalMutations; i++)
+		g_Mutations[i].Fire("end");
+
 	for (int i = 0; i < MAX_MUTATIONS; i++)
 		g_Mutations[i].Clear();
 	g_TotalMutations = 0;
