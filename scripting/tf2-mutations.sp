@@ -41,6 +41,8 @@ enum struct Mutations
 	PrivateForward start;
 	PrivateForward end;
 
+	ArrayList exclusions;
+
 	void Init()
 	{
 		this.name[0] = '\0';
@@ -49,6 +51,7 @@ enum struct Mutations
 		this.plugin = null;
 		this.start = null;
 		this.end = null;
+		this.exclusions = null;
 	}
 
 	void Clear()
@@ -59,6 +62,9 @@ enum struct Mutations
 
 		delete this.start;
 		delete this.end;
+
+		if (this.exclusions != null)
+			this.exclusions.Clear();
 	}
 
 	void Add(const char[] name, Handle plugin, Function func_start, Function func_end)
@@ -72,6 +78,9 @@ enum struct Mutations
 
 		this.end = new PrivateForward(ET_Ignore, Param_Cell);
 		this.end.AddFunction(plugin, func_end);
+
+		delete this.exclusions;
+		this.exclusions = new ArrayList(ByteCountToCells(64));
 	}
 
 	void Fire(const char[] name)
@@ -91,6 +100,19 @@ enum struct Mutations
 			Call_PushCell(this.index);
 			Call_Finish();
 		}
+	}
+
+	void AddExclusion(const char[] exclusion)
+	{
+		if (this.exclusions.FindString(exclusion) != -1)
+			return;
+		
+		this.exclusions.PushString(exclusion);
+	}
+
+	bool IsExcluded(const char[] exclusion)
+	{
+		return this.exclusions.FindString(exclusion) != -1;
 	}
 }
 
@@ -115,6 +137,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 	CreateNative("TF2_AddMutation", Native_AddMutation);
 	CreateNative("TF2_IsMutationActive", Native_IsMutationActive);
+	CreateNative("TF2_AddMutationExclusion", Native_AddMutationExclusion);
 
 	g_Forward_AddMutations = CreateGlobalForward("TF2_AddMutations", ET_Ignore);
 
@@ -172,6 +195,19 @@ public int Native_IsMutationActive(Handle plugin, int numParams)
 	return g_Mutations[GetNativeCell(1)].active;
 }
 
+public int Native_AddMutationExclusion(Handle plugin, int numParams)
+{
+	int mutation = GetNativeCell(1);
+
+	int size;
+	GetNativeStringLength(2, size); size++;
+
+	char[] sExclusion = new char[size];
+	GetNativeString(2, sExclusion, size);
+
+	g_Mutations[mutation].AddExclusion(sExclusion);
+}
+
 public void Event_OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	if (GameRules_GetProp("m_bInWaitingForPlayers") || GetRandomFloat(0.0, 100.0) > convar_BasePercent.FloatValue)
@@ -183,7 +219,14 @@ public void Event_OnRoundStart(Event event, const char[] name, bool dontBroadcas
 		g_Mutations[i].active = view_as<bool>(GetRandomFloat(0.0, 100.0) <= convar_BasePercentPer.FloatValue);
 		
 		if (g_Mutations[i].active)
-			Format(sMutations, sizeof(sMutations), "%s%s%s", sMutations, strlen(sMutations) == 0 ? " " : ", ", g_Mutations[i].name);
+		{
+			for (int x = 0; x < g_TotalMutations; x++)
+				if (g_Mutations[i].IsExcluded(g_Mutations[x].name))
+					g_Mutations[i].active = false;
+
+			if (g_Mutations[i].active)
+				Format(sMutations, sizeof(sMutations), "%s%s%s", sMutations, strlen(sMutations) == 0 ? " " : ", ", g_Mutations[i].name);
+		}
 	}
 
 	CPrintToChatAll("{crimson}[{fullred}Mutations{crimson}] {beige}Active:{chartreuse}%s", strlen(sMutations) > 0 ? sMutations : " None Active");

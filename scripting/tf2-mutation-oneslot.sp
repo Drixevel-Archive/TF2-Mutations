@@ -49,6 +49,7 @@ public void OnPluginStart()
 public void TF2_AddMutations()
 {
 	assigned_mutation = TF2_AddMutation("One Slot", OnMutationStart, OnMutationEnd);
+	TF2_AddMutationExclusion(assigned_mutation, "One Class");
 }
 
 public void OnMutationStart(int mutation)

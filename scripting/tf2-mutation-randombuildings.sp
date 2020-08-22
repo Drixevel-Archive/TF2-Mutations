@@ -57,6 +57,7 @@ public void OnPluginEnd()
 public void TF2_AddMutations()
 {
 	assigned_mutation = TF2_AddMutation("Random Buildings", OnMutationStart, OnMutationEnd);
+	TF2_AddMutationExclusion(assigned_mutation, "Spells");
 }
 
 public void OnMutationStart(int mutation)

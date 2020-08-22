@@ -10,6 +10,7 @@ typedef OnMutationEndFunc = function void (int mutation);
 
 native int TF2_AddMutation(const char[] name, OnMutationStartFunc func_start, OnMutationEndFunc func_end);
 native bool TF2_IsMutationActive(int mutation);
+native void TF2_AddMutationExclusion(int mutation, const char[] exclusion);
 forward void TF2_AddMutations();
 
 #if !defined REQUIRE_PLUGIN
@@ -17,6 +18,7 @@ public void __pl_tf2_mutations_SetNTVOptional()
 {
 	MarkNativeAsOptional("TF2_AddMutation");
 	MarkNativeAsOptional("TF2_IsMutationActive");
+	MarkNativeAsOptional("TF2_AddMutationExclusion");
 }
 #endif
 
