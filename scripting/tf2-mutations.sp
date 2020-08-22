@@ -21,6 +21,9 @@
 /*****************************/
 //ConVars
 
+ConVar convar_BasePercent;
+ConVar convar_BasePercentPer;
+
 /*****************************/
 //Globals
 
@@ -121,6 +124,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
+
+	convar_BasePercent = CreateConVar("sm_mutations_base_percent", "25", "Base percentage for mutations to be fired per round.", FCVAR_NOTIFY, true, 0.0, true, 100.0);
+	convar_BasePercentPer = CreateConVar("sm_mutations_base_percent_per", "25", "Base percentage for mutations to be fired per round per mutation.", FCVAR_NOTIFY, true, 0.0, true, 100.0);
 	
 	//Make sure the data's consistent.
 	for (int i = 0; i < MAX_MUTATIONS; i++)
@@ -168,13 +174,13 @@ public int Native_IsMutationActive(Handle plugin, int numParams)
 
 public void Event_OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
-	if (GameRules_GetProp("m_bInWaitingForPlayers") || GetRandomFloat(0.0, 100.0) > 25.0)
+	if (GameRules_GetProp("m_bInWaitingForPlayers") || GetRandomFloat(0.0, 100.0) > convar_BasePercent.FloatValue)
 		return;
 	
 	char sMutations[64];
 	for (int i = 0; i < g_TotalMutations; i++)
 	{
-		g_Mutations[i].active = view_as<bool>(GetRandomFloat(0.0, 100.0) <= 25.0);
+		g_Mutations[i].active = view_as<bool>(GetRandomFloat(0.0, 100.0) <= convar_BasePercentPer.FloatValue);
 		
 		if (g_Mutations[i].active)
 			Format(sMutations, sizeof(sMutations), "%s%s%s", sMutations, strlen(sMutations) == 0 ? " " : ", ", g_Mutations[i].name);
