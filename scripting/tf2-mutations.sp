@@ -162,6 +162,11 @@ public void OnPluginStart()
 	RegAdminCmd("sm_syncmutations", Command_SyncMutations, ADMFLAG_GENERIC);
 }
 
+public void OnMapStart()
+{
+	PrecacheSound("ui/system_message_alert.wav");
+}
+
 public void OnAllPluginsLoaded()
 {
 	//Called here since all of the mutation plugins will be active.
@@ -210,8 +215,14 @@ public int Native_AddMutationExclusion(Handle plugin, int numParams)
 
 public void Event_OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
-	if (GameRules_GetProp("m_bInWaitingForPlayers") || GetRandomFloat(0.0, 100.0) > convar_BasePercent.FloatValue)
+	if (GameRules_GetProp("m_bInWaitingForPlayers"))
 		return;
+	
+	if (GetRandomFloat(0.0, 100.0) > convar_BasePercent.FloatValue)
+	{
+		CPrintToChatAll("{crimson}[{fullred}Mutations{crimson}] {beige}Disabled this round.");
+		return;
+	}
 	
 	char sMutations[64];
 	for (int i = 0; i < g_TotalMutations; i++)
@@ -230,6 +241,7 @@ public void Event_OnRoundStart(Event event, const char[] name, bool dontBroadcas
 	}
 
 	CPrintToChatAll("{crimson}[{fullred}Mutations{crimson}] {beige}Active:{chartreuse}%s", strlen(sMutations) > 0 ? sMutations : " None Active");
+	EmitSoundToAll("ui/system_message_alert.wav");
 	
 	CreateTimer(0.2, Timer_RoundStart, _, TIMER_FLAG_NO_MAPCHANGE);
 }
@@ -237,13 +249,20 @@ public void Event_OnRoundStart(Event event, const char[] name, bool dontBroadcas
 public Action Timer_RoundStart(Handle timer)
 {
 	for (int i = 0; i < g_TotalMutations; i++)
-		g_Mutations[i].Fire("start");
+		if (g_Mutations[i].active)
+			g_Mutations[i].Fire("start");
 }
 
 public void Event_OnRoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	for (int i = 0; i < g_TotalMutations; i++)
+	{
+		if (!g_Mutations[i].active)
+			continue;
+		
 		g_Mutations[i].Fire("end");
+		g_Mutations[i].active = false;
+	}
 }
 
 public Action Command_Mutations(int client, int args)
@@ -301,7 +320,10 @@ public int MenuHandler_Mutations(Menu menu, MenuAction action, int param1, int p
 public Action Command_SyncMutations(int client, int args)
 {
 	for (int i = 0; i < g_TotalMutations; i++)
+	{
 		g_Mutations[i].Fire("end");
+		g_Mutations[i].active = false;
+	}
 
 	for (int i = 0; i < MAX_MUTATIONS; i++)
 		g_Mutations[i].Clear();
